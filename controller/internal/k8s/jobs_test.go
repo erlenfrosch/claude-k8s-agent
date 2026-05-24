@@ -39,6 +39,16 @@ func TestCountRunningJobs_withActive(t *testing.T) {
 			},
 			Status: batchv1.JobStatus{Active: active},
 		},
+		// Job ohne app=claude-agent, aber Completed (Active=0): testet, dass inaktive Jobs
+		// nicht gezählt werden. Label-Selector-Filterung kann mit fake.SimpleClientset nicht
+		// getestet werden (ignoriert LabelSelector); dies bleibt einem Integrations-Test vorbehalten.
+		&batchv1.Job{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "other-completed-job", Namespace: "claude-agent",
+				Labels: map[string]string{"app": "other"},
+			},
+			Status: batchv1.JobStatus{Active: 0, Succeeded: 1},
+		},
 	)
 	client := k8sclient.NewClient(fakeCS, "claude-agent")
 	count, err := client.CountRunningJobs(context.Background())

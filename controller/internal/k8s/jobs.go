@@ -85,7 +85,7 @@ func (c *Client) CreateAgentJob(ctx context.Context, p JobParams) error {
 	jobName := fmt.Sprintf("claude-agent-issue-%s", p.IssueNumber)
 	ttl := int32(3600)
 	uid := int64(0)
-	priv := true
+	priv := true // Privileged ermöglicht Docker-Socket-Zugriff für Claude Code im Container
 
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -160,8 +160,10 @@ func buildSetupScript(p JobParams) string {
 		`  if [ -n "$YQ_PROFILE" ]; then PROFILE="$YQ_PROFILE"; fi`,
 		`fi`,
 		`forgecrate init --profile "$PROFILE" --flavors "$FLAVORS"`,
-		fmt.Sprintf(`printf "GitHub Issue #%s: %s\n\nArbeite dieses Issue vollstaendig ab.\nErstelle Branch agent/issue-%s, implementiere die Loesung und oeffne einen PR.\n" > /workspace/.agent-prompt`,
-			p.IssueNumber, p.IssueTitle, p.IssueNumber),
+		// Titel als Variable setzen, um printf-Format-Injection durch Sonderzeichen (%) zu vermeiden
+		fmt.Sprintf(`ISSUE_TITLE=%q`, p.IssueTitle),
+		fmt.Sprintf(`printf "GitHub Issue #%s: %%s\n\nArbeite dieses Issue vollstaendig ab.\nErstelle Branch agent/issue-%s, implementiere die Loesung und oeffne einen PR.\n" "$ISSUE_TITLE" > /workspace/.agent-prompt`,
+			p.IssueNumber, p.IssueNumber),
 	}
 	return strings.Join(lines, "\n")
 }
