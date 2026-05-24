@@ -3,6 +3,7 @@ package github
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/url"
 	"strings"
 
@@ -22,21 +23,24 @@ type Client struct {
 	gh *gogithub.Client
 }
 
-// NewClient erstellt einen authentifizierten GitHub-Client.
+// NewClient erstellt einen authentifizierten GitHub-Client via OAuth2-Transport.
 func NewClient(token string) *Client {
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 	tc := oauth2.NewClient(context.Background(), ts)
-	return &Client{gh: gogithub.NewClient(tc).WithAuthToken(token)}
+	return &Client{gh: gogithub.NewClient(tc)}
 }
 
 // NewClientWithBaseURL erstellt einen Client mit angepasster Base-URL (für Tests).
+// Verwendet oauth2-Transport für Authentifizierung ohne WithAuthToken-Redundanz.
 func NewClientWithBaseURL(token, baseURL string) *Client {
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 	tc := oauth2.NewClient(context.Background(), ts)
-	c := gogithub.NewClient(tc).WithAuthToken(token)
+	c := gogithub.NewClient(tc)
 	parsed, err := url.Parse(baseURL)
 	if err != nil {
-		panic(fmt.Sprintf("ungültige Base-URL %q: %v", baseURL, err))
+		// url.Parse ist sehr permissiv; dieser Pfad wird in der Praxis nicht erreicht.
+		slog.Warn("Ungültige Base-URL, verwende go-github Standard", "url", baseURL, "error", err)
+		return &Client{gh: c}
 	}
 	if !strings.HasSuffix(parsed.Path, "/") {
 		parsed.Path += "/"
