@@ -15,19 +15,19 @@ type Message struct {
 
 // Client sendet Push-Benachrichtigungen an einen ntfy-Server.
 type Client struct {
-	baseURL   string
-	topic     string
-	authToken string
-	http      *http.Client
+	baseURL    string
+	topic      string
+	authToken  string
+	httpClient *http.Client
 }
 
 // NewClient erstellt einen ntfy-Client.
 func NewClient(baseURL, topic, authToken string) *Client {
 	return &Client{
-		baseURL:   strings.TrimRight(baseURL, "/"),
-		topic:     topic,
-		authToken: authToken,
-		http:      &http.Client{},
+		baseURL:    strings.TrimRight(baseURL, "/"),
+		topic:      topic,
+		authToken:  authToken,
+		httpClient: &http.Client{},
 	}
 }
 
@@ -44,7 +44,7 @@ func (c *Client) Send(msg Message) error {
 	if c.authToken != "" {
 		req.Header.Set("Authorization", "Bearer "+c.authToken)
 	}
-	resp, err := c.http.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("ntfy request: %w", err)
 	}
