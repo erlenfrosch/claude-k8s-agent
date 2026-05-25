@@ -28,6 +28,12 @@ spec:
                     secretKeyRef:
                       name: claude-agent-secrets
                       key: GITHUB_TOKEN
+                - name: NTFY_AUTH_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: claude-agent-secrets
+                      key: NTFY_AUTH_TOKEN
+                      optional: true
                 - name: TARGET_REPO
                   valueFrom:
                     configMapKeyRef:
