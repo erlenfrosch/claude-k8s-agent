@@ -34,6 +34,14 @@ cd "$WORKSPACE"
 echo "=== Agent startet: Issue #${ISSUE_NUMBER}: ${ISSUE_TITLE} ==="
 echo "=== Repo: ${TARGET_REPO} ==="
 
+# Preflight: .agent-prompt muss vorhanden sein (wird vom Init-Container erstellt)
+if [ ! -f .agent-prompt ]; then
+  echo "FEHLER: .agent-prompt fehlt — Init-Container hat nicht korrekt abgeschlossen" >&2
+  ntfy_send "Fehler: Issue #${ISSUE_NUMBER}" \
+    ".agent-prompt fehlt im Workspace. Init-Container prüfen." "urgent"
+  exit 1
+fi
+
 # Claude Code starten
 claude \
   --dangerously-skip-permissions \
