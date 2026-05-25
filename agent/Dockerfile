@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Node.js 20
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
+    && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 # forgecrate via apt
@@ -28,7 +28,7 @@ RUN curl -fsSL https://jmt-labs.github.io/apt/KEY.gpg \
     && echo "deb [signed-by=/etc/apt/keyrings/jmt-labs.gpg] https://jmt-labs.github.io/apt stable main" \
     > /etc/apt/sources.list.d/jmt-labs.list \
     && apt-get update \
-    && apt-get install -y forgecrate \
+    && apt-get install -y --no-install-recommends forgecrate \
     && rm -rf /var/lib/apt/lists/*
 
 # Claude Code
