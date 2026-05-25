@@ -158,6 +158,9 @@ func buildSetupScript(p JobParams) string {
 		`if [ -f .claude-agent.yaml ]; then`,
 		`  YQ_PROFILE=$(grep -A1 'profile:' .claude-agent.yaml | tail -1 | tr -d ' :' | grep -v '^$' || true)`,
 		`  if [ -n "$YQ_PROFILE" ]; then PROFILE="$YQ_PROFILE"; fi`,
+		`  # Flavors als kommagetrennte Liste aus dem YAML-Array lesen`,
+		`  YQ_FLAVORS=$(sed -n '/flavors:/,/^  [a-z]/p' .claude-agent.yaml | grep '^\s*- ' | sed 's/^\s*- //' | tr '\n' ',' | sed 's/,$//' || true)`,
+		`  if [ -n "$YQ_FLAVORS" ]; then FLAVORS="$YQ_FLAVORS"; fi`,
 		`fi`,
 		`forgecrate init --profile "$PROFILE" --flavors "$FLAVORS"`,
 		// Titel als Variable setzen, um printf-Format-Injection durch Sonderzeichen (%) zu vermeiden
