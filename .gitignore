@@ -1,0 +1,15 @@
+# .gitignore
+
+# Echte Secrets niemals committen
+deploy/sealed-secret.yaml
+secret.yaml
+**/secret.yaml
+
+# Go build artifacts
+controller/bin/
+
+# OS / Editor
+.DS_Store
+.idea/
+.vscode/
+*.swp

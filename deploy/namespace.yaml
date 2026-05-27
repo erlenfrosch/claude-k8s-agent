@@ -1,0 +1,10 @@
+# deploy/namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: claude-agent
+  labels:
+    app.kubernetes.io/managed-by: argocd
+    # Agent-Pods benötigen privilegierte Container (Docker-Socket-Zugriff für Claude Code)
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/warn: privileged

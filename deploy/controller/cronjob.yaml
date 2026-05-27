@@ -1,0 +1,48 @@
+# deploy/controller/cronjob.yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: issue-controller
+  namespace: claude-agent
+spec:
+  schedule: "*/10 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: issue-controller
+          restartPolicy: OnFailure
+          containers:
+            - name: controller
+              image: ghcr.io/erlenfrosch/claude-agent:latest
+              command: ["/usr/local/bin/issue-controller"]
+              envFrom:
+                - configMapRef:
+                    name: claude-agent-config
+              env:
+                - name: GITHUB_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: claude-agent-secrets
+                      key: GITHUB_TOKEN
+                - name: NTFY_AUTH_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: claude-agent-secrets
+                      key: NTFY_AUTH_TOKEN
+                      optional: true
+                - name: TARGET_REPO
+                  valueFrom:
+                    configMapKeyRef:
+                      name: claude-agent-config
+                      key: TARGET_REPO
+              resources:
+                requests:
+                  memory: "64Mi"
+                  cpu: "50m"
+                limits:
+                  memory: "256Mi"
+                  cpu: "500m"

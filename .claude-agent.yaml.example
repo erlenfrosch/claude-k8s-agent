@@ -1,0 +1,16 @@
+# .claude-agent.yaml
+# Diese Datei ins Root-Verzeichnis jedes Ziel-Repos legen.
+# Steuert forgecrate-Profil und Flavors fuer den autonomen Agenten.
+# Fehlt die Datei: ConfigMap-Defaults gelten (profile: backend, flavors: github,gitops).
+
+forgecrate:
+  # Verfuegbare Profile: backend | frontend | fullstack
+  profile: backend
+
+  # Verfuegbare Flavors: tdd | strict-review | github | gitops | getbetter | minimal | no-research
+  flavors:
+    - github
+    - gitops
+    # Weitere nach Bedarf:
+    # - tdd
+    # - strict-review

@@ -1,0 +1,16 @@
+# deploy/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: claude-agent-config
+  namespace: claude-agent
+data:
+  MAX_PODS: "4"
+  LABEL_FILTER: "agent-backlog"
+  DEFAULT_PROFILE: "backend"
+  DEFAULT_FLAVORS: "github,gitops"
+  NTFY_URL: "https://ntfy.DEINE_DOMAIN"
+  NTFY_TOPIC: "claude-agent"
+  AGENT_IMAGE: "ghcr.io/erlenfrosch/claude-agent:latest"
+  NAMESPACE: "claude-agent"
+  SECRET_NAME: "claude-agent-secrets"

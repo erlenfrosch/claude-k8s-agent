@@ -1,0 +1,12 @@
+# deploy/ntfy/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ntfy
+  namespace: claude-agent
+spec:
+  selector:
+    app: ntfy
+  ports:
+    - port: 80
+      targetPort: 80
