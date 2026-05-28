@@ -34,6 +34,16 @@ cd "$WORKSPACE"
 echo "=== Agent startet: Issue #${ISSUE_NUMBER}: ${ISSUE_TITLE} ==="
 echo "=== Repo: ${TARGET_REPO} ==="
 
+# OAuth-Credentials aus Secret einlesen (Alternative zu ANTHROPIC_API_KEY).
+# Ermöglicht Nutzung eines Claude.ai Pro/Max-Abos ohne API-Kosten.
+# Inhalt: ~/.claude/.credentials.json vom Entwickler-Rechner, als K8s-SealedSecret gespeichert.
+if [ -n "${CLAUDE_CREDENTIALS:-}" ]; then
+  mkdir -p "${HOME:-/root}/.claude"
+  printf '%s' "$CLAUDE_CREDENTIALS" > "${HOME:-/root}/.claude/.credentials.json"
+  chmod 600 "${HOME:-/root}/.claude/.credentials.json"
+  echo "=== Claude OAuth-Credentials aus Secret geladen ==="
+fi
+
 # Preflight: .agent-prompt muss vorhanden sein (wird vom Init-Container erstellt)
 if [ ! -f .agent-prompt ]; then
   echo "FEHLER: .agent-prompt fehlt — Init-Container hat nicht korrekt abgeschlossen" >&2

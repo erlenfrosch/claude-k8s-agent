@@ -122,9 +122,14 @@ func (c *Client) CreateAgentJob(ctx context.Context, p JobParams) error {
 							},
 						},
 						Env: []corev1.EnvVar{
-							secretEnv("ANTHROPIC_API_KEY", p.SecretName, "ANTHROPIC_API_KEY"),
+							// ANTHROPIC_API_KEY und CLAUDE_CREDENTIALS sind beide optional —
+							// es genügt eines der beiden zur Authentifizierung:
+							//   ANTHROPIC_API_KEY  → Pay-per-use API
+							//   CLAUDE_CREDENTIALS → OAuth-JSON aus Claude.ai Pro/Max-Abo
+							secretEnvOptional("ANTHROPIC_API_KEY", p.SecretName, "ANTHROPIC_API_KEY"),
+							secretEnvOptional("CLAUDE_CREDENTIALS", p.SecretName, "CLAUDE_CREDENTIALS"),
 							secretEnv("GITHUB_TOKEN", p.SecretName, "GITHUB_TOKEN"),
-							secretEnv("NTFY_AUTH_TOKEN", p.SecretName, "NTFY_AUTH_TOKEN"),
+							secretEnvOptional("NTFY_AUTH_TOKEN", p.SecretName, "NTFY_AUTH_TOKEN"),
 							{Name: "NTFY_URL", Value: p.NtfyURL},
 							{Name: "NTFY_TOPIC", Value: p.NtfyTopic},
 							{Name: "ISSUE_NUMBER", Value: p.IssueNumber},
@@ -178,6 +183,22 @@ func secretEnv(name, secretName, key string) corev1.EnvVar {
 			SecretKeyRef: &corev1.SecretKeySelector{
 				LocalObjectReference: corev1.LocalObjectReference{Name: secretName},
 				Key:                  key,
+			},
+		},
+	}
+}
+
+// secretEnvOptional liefert eine Env-Var aus einem Secret, die nicht zwingend vorhanden sein muss.
+// Fehlt der Key im Secret, wird die Env-Var leer gesetzt statt den Pod scheitern zu lassen.
+func secretEnvOptional(name, secretName, key string) corev1.EnvVar {
+	optional := true
+	return corev1.EnvVar{
+		Name: name,
+		ValueFrom: &corev1.EnvVarSource{
+			SecretKeyRef: &corev1.SecretKeySelector{
+				LocalObjectReference: corev1.LocalObjectReference{Name: secretName},
+				Key:                  key,
+				Optional:             &optional,
 			},
 		},
 	}
