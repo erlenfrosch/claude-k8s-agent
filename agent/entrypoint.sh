@@ -8,18 +8,22 @@ WATCHDOG_IDLE_ROUNDS=10  # Runden ohne Output = ~10 Min -> "needs input"
 NOTIFIED_IDLE=false
 SHARE_URL=""
 
-ntfy_send() {
+gotify_send() {
   local title="$1" body="$2" priority="${3:-default}"
-  local auth_args=()
-  if [ -n "${NTFY_AUTH_TOKEN:-}" ]; then
-    auth_args=(-H "Authorization: Bearer ${NTFY_AUTH_TOKEN}")
-  fi
-  curl -s -d "$body" \
-    -H "Title: $title" \
-    -H "Priority: $priority" \
-    "${auth_args[@]}" \
-    "${NTFY_URL}/${NTFY_TOPIC}" || {
-    echo "WARNUNG: ntfy-Notification fehlgeschlagen" >&2
+  # Priorität auf Gotify-Integer mappen (default=5, high=7, urgent=9)
+  local prio=5
+  case "$priority" in high) prio=7 ;; urgent) prio=9 ;; esac
+  # JSON sicher über python3 bauen (vermeidet Quote-Injection in title/body)
+  local payload
+  payload=$(python3 -c "
+import json, sys
+print(json.dumps({'title': sys.argv[1], 'message': sys.argv[2], 'priority': int(sys.argv[3])}))
+" "$title" "$body" "$prio")
+  curl -s -X POST \
+    -H "Content-Type: application/json" \
+    -d "$payload" \
+    "${GOTIFY_URL}/message?token=${GOTIFY_TOKEN:-}" || {
+    echo "WARNUNG: Gotify-Notification fehlgeschlagen" >&2
     true
   }
 }
@@ -47,7 +51,7 @@ fi
 # Preflight: .agent-prompt muss vorhanden sein (wird vom Init-Container erstellt)
 if [ ! -f .agent-prompt ]; then
   echo "FEHLER: .agent-prompt fehlt — Init-Container hat nicht korrekt abgeschlossen" >&2
-  ntfy_send "Fehler: Issue #${ISSUE_NUMBER}" \
+  gotify_send "Fehler: Issue #${ISSUE_NUMBER}" \
     ".agent-prompt fehlt im Workspace. Init-Container prüfen." "urgent"
   exit 1
 fi
@@ -74,11 +78,11 @@ done
 # Start-Notification
 ISSUE_HEADER=$(head -1 .agent-prompt 2>/dev/null || echo "Issue #${ISSUE_NUMBER}")
 if [ -n "$SHARE_URL" ]; then
-  ntfy_send "Agent laeuft: Issue #${ISSUE_NUMBER}" \
+  gotify_send "Agent laeuft: Issue #${ISSUE_NUMBER}" \
     "${ISSUE_HEADER}
 Session: ${SHARE_URL}" "default"
 else
-  ntfy_send "Agent laeuft: Issue #${ISSUE_NUMBER}" \
+  gotify_send "Agent laeuft: Issue #${ISSUE_NUMBER}" \
     "${ISSUE_HEADER}
 (Kein Share-Link verfuegbar)" "default"
 fi
@@ -95,7 +99,7 @@ while kill -0 $CLAUDE_PID 2>/dev/null; do
     IDLE_ROUNDS=$((IDLE_ROUNDS + 1))
     if [ "$IDLE_ROUNDS" -ge "$WATCHDOG_IDLE_ROUNDS" ] && [ "$NOTIFIED_IDLE" = "false" ]; then
       echo "Watchdog: Agent idle seit ${WATCHDOG_IDLE_ROUNDS} Runden"
-      ntfy_send "Eingabe noetig: Issue #${ISSUE_NUMBER}" \
+      gotify_send "Eingabe noetig: Issue #${ISSUE_NUMBER}" \
         "Agent wartet auf Eingabe.
 Session: ${SHARE_URL:-kein Link}" "high"
       NOTIFIED_IDLE=true
@@ -113,11 +117,11 @@ EXIT_CODE=$?
 if [ $EXIT_CODE -eq 0 ]; then
   PR_URL=$(grep -o 'https://github\.com/[^ "]*pull[^ "]*' "$CLAUDE_LOG" | tail -1 || true)
   BODY="${PR_URL:-Issue #${ISSUE_NUMBER} abgeschlossen (kein PR-Link im Log)}"
-  ntfy_send "Abgeschlossen: Issue #${ISSUE_NUMBER}" "$BODY" "default"
+  gotify_send "Abgeschlossen: Issue #${ISSUE_NUMBER}" "$BODY" "default"
   echo "=== Agent erfolgreich ==="
 else
   LAST_LINES=$(tail -15 "$CLAUDE_LOG" 2>/dev/null || echo "Kein Log")
-  ntfy_send "Fehler: Issue #${ISSUE_NUMBER}" \
+  gotify_send "Fehler: Issue #${ISSUE_NUMBER}" \
     "Exit-Code: ${EXIT_CODE}
 ${LAST_LINES}" "urgent"
   echo "=== Agent fehlgeschlagen: Exit ${EXIT_CODE} ===" >&2

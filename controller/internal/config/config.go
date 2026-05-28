@@ -11,9 +11,8 @@ type Config struct {
 	LabelFilter    string
 	DefaultProfile string
 	DefaultFlavors string
-	NtfyURL        string
-	NtfyTopic      string
-	NtfyAuthToken  string
+	GotifyURL      string
+	GotifyToken    string
 	AgentImage     string
 	GithubToken    string
 	TargetRepo     string
@@ -31,9 +30,8 @@ func Load() (*Config, error) {
 		LabelFilter:    env("LABEL_FILTER", "agent-backlog"),
 		DefaultProfile: env("DEFAULT_PROFILE", "backend"),
 		DefaultFlavors: env("DEFAULT_FLAVORS", "github,gitops"),
-		NtfyURL:        mustEnv("NTFY_URL"),
-		NtfyTopic:      mustEnv("NTFY_TOPIC"),
-		NtfyAuthToken:  os.Getenv("NTFY_AUTH_TOKEN"),
+		GotifyURL:      mustEnv("GOTIFY_URL"),
+		GotifyToken:    os.Getenv("GOTIFY_TOKEN"),
 		AgentImage:     mustEnv("AGENT_IMAGE"),
 		GithubToken:    mustEnv("GITHUB_TOKEN"),
 		TargetRepo:     mustEnv("TARGET_REPO"),

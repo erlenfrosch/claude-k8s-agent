@@ -22,8 +22,7 @@ type JobParams struct {
 	TargetRepo  string
 	AgentImage  string
 	SecretName  string
-	NtfyURL     string
-	NtfyTopic   string
+	GotifyURL   string
 	Profile     string
 	Flavors     string
 }
@@ -98,8 +97,7 @@ func (c *Controller) Reconcile(ctx context.Context) error {
 			TargetRepo:  c.cfg.TargetRepo,
 			AgentImage:  c.cfg.AgentImage,
 			SecretName:  c.cfg.SecretName,
-			NtfyURL:     c.cfg.NtfyURL,
-			NtfyTopic:   c.cfg.NtfyTopic,
+			GotifyURL:   c.cfg.GotifyURL,
 			Profile:     c.cfg.DefaultProfile,
 			Flavors:     c.cfg.DefaultFlavors,
 		}); err != nil {

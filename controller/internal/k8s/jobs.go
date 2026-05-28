@@ -21,8 +21,7 @@ type JobParams struct {
 	TargetRepo  string
 	AgentImage  string
 	SecretName  string
-	NtfyURL     string
-	NtfyTopic   string
+	GotifyURL   string
 	Profile     string
 	Flavors     string
 }
@@ -129,9 +128,8 @@ func (c *Client) CreateAgentJob(ctx context.Context, p JobParams) error {
 							secretEnvOptional("ANTHROPIC_API_KEY", p.SecretName, "ANTHROPIC_API_KEY"),
 							secretEnvOptional("CLAUDE_CREDENTIALS", p.SecretName, "CLAUDE_CREDENTIALS"),
 							secretEnv("GITHUB_TOKEN", p.SecretName, "GITHUB_TOKEN"),
-							secretEnvOptional("NTFY_AUTH_TOKEN", p.SecretName, "NTFY_AUTH_TOKEN"),
-							{Name: "NTFY_URL", Value: p.NtfyURL},
-							{Name: "NTFY_TOPIC", Value: p.NtfyTopic},
+							secretEnvOptional("GOTIFY_TOKEN", p.SecretName, "GOTIFY_TOKEN"),
+							{Name: "GOTIFY_URL", Value: p.GotifyURL},
 							{Name: "ISSUE_NUMBER", Value: p.IssueNumber},
 							{Name: "ISSUE_TITLE", Value: p.IssueTitle},
 							{Name: "TARGET_REPO", Value: p.TargetRepo},
