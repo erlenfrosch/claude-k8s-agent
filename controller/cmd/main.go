@@ -8,8 +8,8 @@ import (
 	"github.com/erlenfrosch/claude-k8s-agent/controller/internal/config"
 	ctrl "github.com/erlenfrosch/claude-k8s-agent/controller/internal/controller"
 	ghclient "github.com/erlenfrosch/claude-k8s-agent/controller/internal/github"
+	gotifyclient "github.com/erlenfrosch/claude-k8s-agent/controller/internal/gotify"
 	k8sclient "github.com/erlenfrosch/claude-k8s-agent/controller/internal/k8s"
-	ntfyclient "github.com/erlenfrosch/claude-k8s-agent/controller/internal/ntfy"
 )
 
 // Adapter-Typen passen die konkreten Clients an die Controller-Interfaces an.
@@ -46,15 +46,15 @@ func (a *k8sAdapter) CreateAgentJob(ctx context.Context, p ctrl.JobParams) error
 	return a.c.CreateAgentJob(ctx, k8sclient.JobParams{
 		IssueNumber: p.IssueNumber, IssueTitle: p.IssueTitle,
 		TargetRepo: p.TargetRepo, AgentImage: p.AgentImage,
-		SecretName: p.SecretName, NtfyURL: p.NtfyURL, NtfyTopic: p.NtfyTopic,
+		SecretName: p.SecretName, GotifyURL: p.GotifyURL,
 		Profile: p.Profile, Flavors: p.Flavors,
 	})
 }
 
-type ntfyAdapter struct{ c *ntfyclient.Client }
+type gotifyAdapter struct{ c *gotifyclient.Client }
 
-func (a *ntfyAdapter) Send(title, body, priority string) error {
-	return a.c.Send(ntfyclient.Message{Title: title, Body: body, Priority: priority})
+func (a *gotifyAdapter) Send(title, body, priority string) error {
+	return a.c.Send(title, body, priority)
 }
 
 func main() {
@@ -75,7 +75,7 @@ func main() {
 	c := ctrl.New(cfg,
 		&ghAdapter{c: ghclient.NewClient(cfg.GithubToken)},
 		&k8sAdapter{c: k8sClient},
-		&ntfyAdapter{c: ntfyclient.NewClient(cfg.NtfyURL, cfg.NtfyTopic, cfg.NtfyAuthToken)},
+		&gotifyAdapter{c: gotifyclient.NewClient(cfg.GotifyURL, cfg.GotifyToken)},
 	)
 
 	if err := c.Reconcile(context.Background()); err != nil {

@@ -6,8 +6,7 @@ import (
 )
 
 func TestLoad_defaults(t *testing.T) {
-	t.Setenv("NTFY_URL", "http://ntfy.test")
-	t.Setenv("NTFY_TOPIC", "test")
+	t.Setenv("GOTIFY_URL", "http://gotify.test")
 	t.Setenv("AGENT_IMAGE", "img:latest")
 	t.Setenv("GITHUB_TOKEN", "tok")
 	t.Setenv("TARGET_REPO", "owner/repo")
@@ -29,9 +28,8 @@ func TestLoad_defaults(t *testing.T) {
 
 func TestLoad_customValues(t *testing.T) {
 	t.Setenv("MAX_PODS", "2")
-	t.Setenv("NTFY_URL", "http://ntfy.test")
-	t.Setenv("NTFY_TOPIC", "alerts")
-	t.Setenv("AGENT_IMAGE", "img:v1")
+	t.Setenv("GOTIFY_URL", "http://gotify.test")
+		t.Setenv("AGENT_IMAGE", "img:v1")
 	t.Setenv("GITHUB_TOKEN", "tok")
 	t.Setenv("TARGET_REPO", "o/r")
 	t.Setenv("LABEL_FILTER", "ready")
@@ -51,8 +49,7 @@ func TestLoad_customValues(t *testing.T) {
 
 func TestLoad_invalidMaxPods(t *testing.T) {
 	t.Setenv("MAX_PODS", "notanumber")
-	t.Setenv("NTFY_URL", "http://x")
-	t.Setenv("NTFY_TOPIC", "t")
+	t.Setenv("GOTIFY_URL", "http://gotify.test")
 	t.Setenv("AGENT_IMAGE", "i")
 	t.Setenv("GITHUB_TOKEN", "t")
 	t.Setenv("TARGET_REPO", "o/r")

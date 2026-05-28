@@ -92,7 +92,7 @@ func TestCreateAgentJob(t *testing.T) {
 		IssueNumber: "42", IssueTitle: "Fix auth bug",
 		TargetRepo: "owner/repo", AgentImage: "ghcr.io/test/agent:latest",
 		SecretName: "claude-agent-secrets",
-		NtfyURL: "http://ntfy.test", NtfyTopic: "claude-agent",
+		GotifyURL: "http://gotify.gotify.svc.cluster.local",
 		Profile: "backend", Flavors: "github,gitops",
 	})
 	if err != nil {
