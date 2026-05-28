@@ -65,6 +65,7 @@ func (c *Controller) Reconcile(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("Issues laden: %w", err)
 	}
+	slog.Info("Issues geladen", "count", len(issues), "labelFilter", c.cfg.LabelFilter)
 	if len(issues) == 0 {
 		slog.Info("Keine offenen Backlog-Issues")
 		return nil

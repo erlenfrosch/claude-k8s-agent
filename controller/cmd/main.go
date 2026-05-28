@@ -65,6 +65,12 @@ func main() {
 		slog.Error("Config laden fehlgeschlagen", "error", err)
 		os.Exit(1)
 	}
+	slog.Info("Config geladen",
+		"targetRepo", cfg.TargetRepo,
+		"labelFilter", cfg.LabelFilter,
+		"maxPods", cfg.MaxPods,
+		"namespace", cfg.Namespace,
+	)
 
 	k8sClient, err := k8sclient.NewInClusterClient(cfg.Namespace)
 	if err != nil {
