@@ -1,5 +1,5 @@
 # Stage 1: Go Controller Binary bauen
-FROM golang:1.22-bookworm AS controller-build
+FROM golang:1.25-bookworm AS controller-build
 
 WORKDIR /src
 COPY controller/ .
