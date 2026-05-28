@@ -18,8 +18,8 @@ func TestLoad_defaults(t *testing.T) {
 	if cfg.MaxPods != 4 {
 		t.Errorf("expected MaxPods=4, got %d", cfg.MaxPods)
 	}
-	if cfg.LabelFilter != "agent-backlog" {
-		t.Errorf("wrong label: %s", cfg.LabelFilter)
+	if cfg.LabelFilter != "" {
+		t.Errorf("expected empty label filter by default, got: %s", cfg.LabelFilter)
 	}
 	if cfg.Namespace != "claude-agent" {
 		t.Errorf("wrong namespace: %s", cfg.Namespace)

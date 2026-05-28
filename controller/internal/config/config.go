@@ -27,7 +27,7 @@ func Load() (*Config, error) {
 	}
 	return &Config{
 		MaxPods:        maxPods,
-		LabelFilter:    env("LABEL_FILTER", "agent-backlog"),
+		LabelFilter:    os.Getenv("LABEL_FILTER"), // leer = kein Label-Filter
 		DefaultProfile: env("DEFAULT_PROFILE", "backend"),
 		DefaultFlavors: env("DEFAULT_FLAVORS", "github,gitops"),
 		GotifyURL:      mustEnv("GOTIFY_URL"),
