@@ -49,15 +49,20 @@ func NewClientWithBaseURL(token, baseURL string) *Client {
 	return &Client{gh: c}
 }
 
-// ListBacklogIssues gibt alle offenen Issues mit dem angegebenen Label zurück (älteste zuerst).
+// ListBacklogIssues gibt offene Issues zurück (älteste zuerst).
+// Ist label leer, werden alle offenen Issues ohne Label-Filter zurückgegeben.
 func (c *Client) ListBacklogIssues(ctx context.Context, repo, label string) ([]Issue, error) {
 	owner, name, err := splitRepo(repo)
 	if err != nil {
 		return nil, err
 	}
-	issues, _, err := c.gh.Issues.ListByRepo(ctx, owner, name, &gogithub.IssueListByRepoOptions{
-		Labels: []string{label}, State: "open", Direction: "asc", Sort: "created",
-	})
+	opts := &gogithub.IssueListByRepoOptions{
+		State: "open", Direction: "asc", Sort: "created",
+	}
+	if label != "" {
+		opts.Labels = []string{label}
+	}
+	issues, _, err := c.gh.Issues.ListByRepo(ctx, owner, name, opts)
 	if err != nil {
 		return nil, fmt.Errorf("GitHub Issues listen: %w", err)
 	}

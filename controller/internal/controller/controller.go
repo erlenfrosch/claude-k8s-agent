@@ -105,8 +105,11 @@ func (c *Controller) Reconcile(ctx context.Context) error {
 			_ = c.ntfy.Send(fmt.Sprintf("Fehler beim Spawnen: Issue #%d", issue.Number), err.Error(), "urgent")
 			continue
 		}
-		if err := c.gh.SetRunningLabel(ctx, c.cfg.TargetRepo, issue.Number, "agent-running", c.cfg.LabelFilter); err != nil {
-			slog.Warn("Label setzen fehlgeschlagen", "issue", issue.Number, "error", err)
+		// Label-Tracking nur wenn ein Filter gesetzt ist — sonst reicht der JobExists-Check.
+		if c.cfg.LabelFilter != "" {
+			if err := c.gh.SetRunningLabel(ctx, c.cfg.TargetRepo, issue.Number, "agent-running", c.cfg.LabelFilter); err != nil {
+				slog.Warn("Label setzen fehlgeschlagen", "issue", issue.Number, "error", err)
+			}
 		}
 		slog.Info("Job erstellt", "job", jobName)
 		running++
