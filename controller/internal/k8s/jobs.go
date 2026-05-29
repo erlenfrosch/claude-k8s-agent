@@ -165,7 +165,11 @@ func buildSetupScript(p JobParams) string {
 		`  YQ_FLAVORS=$(sed -n '/flavors:/,/^  [a-z]/p' .claude-agent.yaml | grep '^\s*- ' | sed 's/^\s*- //' | tr '\n' ',' | sed 's/,$//' || true)`,
 		`  if [ -n "$YQ_FLAVORS" ]; then FLAVORS="$YQ_FLAVORS"; fi`,
 		`fi`,
-		`forgecrate init --profile "$PROFILE" --flavors "$FLAVORS"`,
+		// forgecrate init kann mit Exit-Code 1 enden wenn ein Plugin (z.B. "superpowers")
+		// im Marketplace noch nicht verfügbar ist. CLAUDE.md, settings.json und Hooks
+		// werden trotzdem korrekt angelegt — daher Fehler abfangen statt abbrechen.
+		`forgecrate init --profile "$PROFILE" --flavors "$FLAVORS" || \` +
+			`  echo "WARNUNG: forgecrate init nicht vollständig abgeschlossen (fehlendes Plugin im Marketplace)"`,
 		// Titel als Variable setzen, um printf-Format-Injection durch Sonderzeichen (%) zu vermeiden
 		fmt.Sprintf(`ISSUE_TITLE=%q`, p.IssueTitle),
 		fmt.Sprintf(`printf "GitHub Issue #%s: %%s\n\nArbeite dieses Issue vollstaendig ab.\nErstelle Branch agent/issue-%s, implementiere die Loesung und oeffne einen PR.\n" "$ISSUE_TITLE" > /workspace/.agent-prompt`,
