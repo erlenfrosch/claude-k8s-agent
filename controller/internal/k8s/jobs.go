@@ -90,6 +90,11 @@ func (c *Client) CreateAgentJob(ctx context.Context, p JobParams) error {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: jobName, Namespace: c.namespace,
 			Labels: map[string]string{"app": "claude-agent", "issue": p.IssueNumber},
+			// IgnoreExtraneous verhindert dass ArgoCD (prune: true) dynamisch
+			// erstellte Agent-Jobs aus dem Cluster löscht.
+			Annotations: map[string]string{
+				"argocd.argoproj.io/compare-options": "IgnoreExtraneous",
+			},
 		},
 		Spec: batchv1.JobSpec{
 			TTLSecondsAfterFinished: &ttl,
