@@ -6,7 +6,6 @@ WORKSPACE=/workspace
 WATCHDOG_INTERVAL=60     # Sekunden zwischen Watchdog-Prüfungen
 WATCHDOG_IDLE_ROUNDS=10  # Runden ohne Output = ~10 Min -> "needs input"
 NOTIFIED_IDLE=false
-SHARE_URL=""
 
 gotify_send() {
   local title="$1" body="$2" priority="${3:-default}"
@@ -28,10 +27,6 @@ print(json.dumps({'title': sys.argv[1], 'message': sys.argv[2], 'priority': int(
   }
 }
 
-extract_share_url() {
-  grep -o 'https://claude\.ai/[^ "]*' "$CLAUDE_LOG" 2>/dev/null \
-    | grep -v 'accounts' | head -1 || true
-}
 
 cd "$WORKSPACE"
 
@@ -57,35 +52,18 @@ if [ ! -f .agent-prompt ]; then
 fi
 
 # Claude Code starten
+# --share wird nicht mehr unterstützt; Session-Link entfällt.
 claude \
   --dangerously-skip-permissions \
-  --share \
   --message "$(cat .agent-prompt)" \
   2>&1 | tee "$CLAUDE_LOG" &
 
 CLAUDE_PID=$!
 
-# Share-URL abwarten (max 60 Sekunden)
-for i in $(seq 1 30); do
-  SHARE_URL=$(extract_share_url)
-  if [ -n "$SHARE_URL" ]; then
-    echo "Share-URL: $SHARE_URL"
-    break
-  fi
-  sleep 2
-done
-
-# Start-Notification
+# Start-Notification (kurz warten damit erste Ausgabe erscheint)
+sleep 3
 ISSUE_HEADER=$(head -1 .agent-prompt 2>/dev/null || echo "Issue #${ISSUE_NUMBER}")
-if [ -n "$SHARE_URL" ]; then
-  gotify_send "Agent laeuft: Issue #${ISSUE_NUMBER}" \
-    "${ISSUE_HEADER}
-Session: ${SHARE_URL}" "default"
-else
-  gotify_send "Agent laeuft: Issue #${ISSUE_NUMBER}" \
-    "${ISSUE_HEADER}
-(Kein Share-Link verfuegbar)" "default"
-fi
+gotify_send "Agent laeuft: Issue #${ISSUE_NUMBER}" "$ISSUE_HEADER" "default"
 
 # Watchdog
 LAST_SIZE=0
@@ -100,8 +78,7 @@ while kill -0 $CLAUDE_PID 2>/dev/null; do
     if [ "$IDLE_ROUNDS" -ge "$WATCHDOG_IDLE_ROUNDS" ] && [ "$NOTIFIED_IDLE" = "false" ]; then
       echo "Watchdog: Agent idle seit ${WATCHDOG_IDLE_ROUNDS} Runden"
       gotify_send "Eingabe noetig: Issue #${ISSUE_NUMBER}" \
-        "Agent wartet auf Eingabe.
-Session: ${SHARE_URL:-kein Link}" "high"
+        "Agent wartet auf Eingabe (keine Aktivitaet seit ~10 Min)." "high"
       NOTIFIED_IDLE=true
     fi
   else
