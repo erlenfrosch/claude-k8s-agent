@@ -41,12 +41,11 @@ COPY --from=controller-build /issue-controller /usr/local/bin/issue-controller
 COPY agent/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/issue-controller
 
-# Non-root user (Claude Code blockiert --dangerously-skip-permissions als root)
-RUN useradd -m -u 1000 -s /bin/bash claude \
-    && mkdir -p /home/claude/.claude \
-    && chown -R claude:claude /home/claude
+# Ubuntu 24.04 enthält bereits user "ubuntu" (UID 1000).
+# Claude Code blockiert --dangerously-skip-permissions als root → als "ubuntu" ausführen.
+RUN mkdir -p /home/ubuntu/.claude && chown -R ubuntu:ubuntu /home/ubuntu
 
-ENV HOME=/home/claude
-USER claude
+ENV HOME=/home/ubuntu
+USER ubuntu
 WORKDIR /workspace
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
