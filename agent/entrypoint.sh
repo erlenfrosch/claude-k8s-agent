@@ -37,9 +37,9 @@ echo "=== Repo: ${TARGET_REPO} ==="
 # Ermöglicht Nutzung eines Claude.ai Pro/Max-Abos ohne API-Kosten.
 # Inhalt: ~/.claude/.credentials.json vom Entwickler-Rechner, als K8s-SealedSecret gespeichert.
 if [ -n "${CLAUDE_CREDENTIALS:-}" ]; then
-  mkdir -p "${HOME:-/root}/.claude"
-  printf '%s' "$CLAUDE_CREDENTIALS" > "${HOME:-/root}/.claude/.credentials.json"
-  chmod 600 "${HOME:-/root}/.claude/.credentials.json"
+  mkdir -p "${HOME:-/home/ubuntu}/.claude"
+  printf '%s' "$CLAUDE_CREDENTIALS" > "${HOME:-/home/ubuntu}/.claude/.credentials.json"
+  chmod 600 "${HOME:-/home/ubuntu}/.claude/.credentials.json"
   echo "=== Claude OAuth-Credentials aus Secret geladen ==="
 fi
 

@@ -83,8 +83,11 @@ func (c *Client) JobExists(ctx context.Context, name string) (bool, error) {
 func (c *Client) CreateAgentJob(ctx context.Context, p JobParams) error {
 	jobName := fmt.Sprintf("claude-agent-issue-%s", p.IssueNumber)
 	ttl := int32(3600)
-	uid := int64(1000) // non-root: Claude Code blockiert --dangerously-skip-permissions für UID 0
-	priv := true       // Privileged ermöglicht Docker-Socket-Zugriff für Claude Code im Container
+	// UID 1000 = user "ubuntu" (Ubuntu 24.04 built-in) aus dem Agent-Image.
+	// Claude Code blockiert --dangerously-skip-permissions wenn UID=0 (root).
+	uid := int64(1000)
+	nonRoot := true
+	priv := true
 
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -102,7 +105,11 @@ func (c *Client) CreateAgentJob(ctx context.Context, p JobParams) error {
 				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{"app": "claude-agent"}},
 				Spec: corev1.PodSpec{
 					RestartPolicy:   corev1.RestartPolicyNever,
-					SecurityContext: &corev1.PodSecurityContext{RunAsUser: &uid},
+					SecurityContext: &corev1.PodSecurityContext{
+						RunAsUser:    &uid,
+						RunAsNonRoot: &nonRoot,
+						FSGroup:      &uid,
+					},
 					InitContainers: []corev1.Container{{
 						Name:    "setup",
 						Image:   p.AgentImage,
