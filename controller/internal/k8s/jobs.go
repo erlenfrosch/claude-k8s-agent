@@ -83,8 +83,8 @@ func (c *Client) JobExists(ctx context.Context, name string) (bool, error) {
 func (c *Client) CreateAgentJob(ctx context.Context, p JobParams) error {
 	jobName := fmt.Sprintf("claude-agent-issue-%s", p.IssueNumber)
 	ttl := int32(3600)
-	uid := int64(0)
-	priv := true // Privileged ermöglicht Docker-Socket-Zugriff für Claude Code im Container
+	uid := int64(1000) // non-root: Claude Code blockiert --dangerously-skip-permissions für UID 0
+	priv := true       // Privileged ermöglicht Docker-Socket-Zugriff für Claude Code im Container
 
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -170,13 +170,11 @@ func buildSetupScript(p JobParams) string {
 		`  YQ_FLAVORS=$(sed -n '/flavors:/,/^  [a-z]/p' .claude-agent.yaml | grep '^\s*- ' | sed 's/^\s*- //' | tr '\n' ',' | sed 's/,$//' || true)`,
 		`  if [ -n "$YQ_FLAVORS" ]; then FLAVORS="$YQ_FLAVORS"; fi`,
 		`fi`,
-		// forgecrate ruft intern "claude plugin install --scope project superpowers" ohne
-		// Marketplace-Suffix auf → Plugin nicht gefunden. Pre-Installation mit korrektem
-		// Suffix hilft für zukünftige Versionen; || true macht den Fehler nicht-fatal
-		// bis forgecrate den Bug in base/extensions.yaml behebt.
-		// Alles außer dem Plugin (CLAUDE.md, settings.json, Hooks) wird korrekt installiert.
-		`claude plugin install --scope project superpowers@claude-plugins-official >/dev/null 2>&1 || true`,
-		`forgecrate init --profile "$PROFILE" --flavors "$FLAVORS" || true`,
+		// superpowers-Plugin vorab installieren damit forgecrate es vorfindet.
+		// Quelle: obra/superpowers-marketplace (nicht claude-plugins-official).
+		`claude plugin marketplace add obra/superpowers-marketplace 2>/dev/null || true`,
+		`claude plugin install --scope project superpowers@superpowers-marketplace 2>/dev/null || true`,
+		`forgecrate init --profile "$PROFILE" --flavors "$FLAVORS"`,
 		// Titel als Variable setzen, um printf-Format-Injection durch Sonderzeichen (%) zu vermeiden
 		fmt.Sprintf(`ISSUE_TITLE=%q`, p.IssueTitle),
 		fmt.Sprintf(`printf "GitHub Issue #%s: %%s\n\nArbeite dieses Issue vollstaendig ab.\nErstelle Branch agent/issue-%s, implementiere die Loesung und oeffne einen PR.\n" "$ISSUE_TITLE" > /workspace/.agent-prompt`,
