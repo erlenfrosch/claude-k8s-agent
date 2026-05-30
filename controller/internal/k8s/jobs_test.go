@@ -114,4 +114,13 @@ func TestCreateAgentJob(t *testing.T) {
 	if len(job.Spec.Template.Spec.Containers) != 1 {
 		t.Errorf("expected 1 container, got %d", len(job.Spec.Template.Spec.Containers))
 	}
+
+	// Claude Code blockiert --dangerously-skip-permissions als root → Pod darf nie als UID 0 laufen.
+	sc := job.Spec.Template.Spec.SecurityContext
+	if sc == nil || sc.RunAsUser == nil || *sc.RunAsUser == 0 {
+		t.Error("pod must not run as root: RunAsUser must be non-zero")
+	}
+	if sc.RunAsNonRoot == nil || !*sc.RunAsNonRoot {
+		t.Error("RunAsNonRoot must be true")
+	}
 }

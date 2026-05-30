@@ -41,9 +41,12 @@ COPY --from=controller-build /issue-controller /usr/local/bin/issue-controller
 COPY agent/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/issue-controller
 
-# Non-root user: Claude Code verweigert --dangerously-skip-permissions als root (UID 0)
-RUN useradd -m -u 1000 -s /bin/bash claude
-ENV HOME=/home/claude
+# Non-root user (Claude Code blockiert --dangerously-skip-permissions als root)
+RUN useradd -m -u 1000 -s /bin/bash claude \
+    && mkdir -p /home/claude/.claude \
+    && chown -R claude:claude /home/claude
 
+ENV HOME=/home/claude
+USER claude
 WORKDIR /workspace
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
