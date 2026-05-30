@@ -31,8 +31,8 @@ RUN curl -fsSL https://jmt-labs.github.io/apt/KEY.gpg \
     && apt-get install -y --no-install-recommends forgecrate \
     && rm -rf /var/lib/apt/lists/*
 
-# Claude Code
-RUN npm install -g @anthropic-ai/claude-code
+# Claude Code (Version pinnen damit Docker-Cache nicht alte Version einfriert)
+RUN npm install -g @anthropic-ai/claude-code@2.1.158
 
 # Controller Binary aus Stage 1
 COPY --from=controller-build /issue-controller /usr/local/bin/issue-controller
