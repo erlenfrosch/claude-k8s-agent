@@ -177,11 +177,19 @@ func buildSetupScript(p JobParams) string {
 		`  YQ_FLAVORS=$(sed -n '/flavors:/,/^  [a-z]/p' .claude-agent.yaml | grep '^\s*- ' | sed 's/^\s*- //' | tr '\n' ',' | sed 's/,$//' || true)`,
 		`  if [ -n "$YQ_FLAVORS" ]; then FLAVORS="$YQ_FLAVORS"; fi`,
 		`fi`,
-		// superpowers-Plugin vorab installieren damit forgecrate es vorfindet.
-		// Quelle: obra/superpowers-marketplace (nicht claude-plugins-official).
+		// Plugins vorab installieren damit forgecrate sie als "bereits installiert" erkennt.
+		// superpowers: eigener Marketplace (claude-plugins-official hat Schema-Bugs).
+		// Restliche Pflicht-Plugins aus base/extensions.yaml: commit-commands, security-guidance,
+		// claude-md-management — nur in claude-plugins-official verfügbar, best-effort.
 		`claude plugin marketplace add obra/superpowers-marketplace 2>/dev/null || true`,
 		`claude plugin install --scope project superpowers@superpowers-marketplace 2>/dev/null || true`,
-		`forgecrate init --profile "$PROFILE" --flavors "$FLAVORS"`,
+		`claude plugin install --scope project commit-commands@claude-plugins-official 2>/dev/null || true`,
+		`claude plugin install --scope project security-guidance@claude-plugins-official 2>/dev/null || true`,
+		`claude plugin install --scope project claude-md-management@claude-plugins-official 2>/dev/null || true`,
+		// forgecrate init: CLAUDE.md + Hooks werden VOR dem Plugin-Schritt deployed → immer vorhanden.
+		// Plugin-Installationen sind im headless Container unzuverlässig (Marketplace-Schema-Bugs) →
+		// || true macht den Step nicht-fatal; kritische Artefakte sind bereits gesetzt.
+		`forgecrate init --profile "$PROFILE" --flavors "$FLAVORS" || true`,
 		// Titel als Variable setzen, um printf-Format-Injection durch Sonderzeichen (%) zu vermeiden
 		fmt.Sprintf(`ISSUE_TITLE=%q`, p.IssueTitle),
 		fmt.Sprintf(`printf "GitHub Issue #%s: %%s\n\nArbeite dieses Issue vollstaendig ab.\nErstelle Branch agent/issue-%s, implementiere die Loesung und oeffne einen PR.\n" "$ISSUE_TITLE" > /workspace/.agent-prompt`,
