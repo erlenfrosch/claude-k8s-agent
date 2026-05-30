@@ -1,0 +1,11 @@
+version: "1.0"
+source: github.com/jmt-labs/forgecrate
+ref: main
+profile: fullstack
+flavors: []
+permission_mode: bypass
+deployed_files:
+    .claude/hooks/pre-tool-test.sh: sha256:3fd062c0d9c7bab72a682d33556e2e20490bb30803d985d693b4d564e9135138
+    .claude/hooks/pre-tool.sh: sha256:b55c6c8147bdd71ab7dd7656e55a99c90ceeede46cf6cf682ec0e5bc42040e16
+    .claude/hooks/prompt-submit.sh: sha256:34251d2681b7c8294cc8080efe96c2292accf7b3c1bdd311ddd1267e41834be7
+    .claude/settings.json: sha256:ad82eea2d04fa4c3564feda461d555e2c19c9eea9ba76efe0f72cf8f889df8ec
