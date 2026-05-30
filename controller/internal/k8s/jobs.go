@@ -133,11 +133,13 @@ func (c *Client) CreateAgentJob(ctx context.Context, p JobParams) error {
 							},
 						},
 						Env: []corev1.EnvVar{
-							// ANTHROPIC_API_KEY und CLAUDE_CREDENTIALS sind beide optional —
-							// es genügt eines der beiden zur Authentifizierung:
-							//   ANTHROPIC_API_KEY  → Pay-per-use API
-							//   CLAUDE_CREDENTIALS → OAuth-JSON aus Claude.ai Pro/Max-Abo
+							// Auth-Priorität (Claude Code):
+							//   ANTHROPIC_API_KEY        → Pay-per-use API (höchste Prio)
+							//   CLAUDE_CODE_OAUTH_TOKEN  → 1-Jahres-Token via `claude setup-token`
+							//                             Bypasses claude.ai-Handshake (Cloudflare 403)
+							//   CLAUDE_CREDENTIALS       → credentials.json (schlägt fehl wenn claude.ai geblockt)
 							secretEnvOptional("ANTHROPIC_API_KEY", p.SecretName, "ANTHROPIC_API_KEY"),
+							secretEnvOptional("CLAUDE_CODE_OAUTH_TOKEN", p.SecretName, "CLAUDE_CODE_OAUTH_TOKEN"),
 							secretEnvOptional("CLAUDE_CREDENTIALS", p.SecretName, "CLAUDE_CREDENTIALS"),
 							secretEnv("GITHUB_TOKEN", p.SecretName, "GITHUB_TOKEN"),
 							secretEnvOptional("GOTIFY_TOKEN", p.SecretName, "GOTIFY_TOKEN"),
