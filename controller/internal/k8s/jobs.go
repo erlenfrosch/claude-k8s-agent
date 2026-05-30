@@ -170,11 +170,11 @@ func buildSetupScript(p JobParams) string {
 		`  YQ_FLAVORS=$(sed -n '/flavors:/,/^  [a-z]/p' .claude-agent.yaml | grep '^\s*- ' | sed 's/^\s*- //' | tr '\n' ',' | sed 's/,$//' || true)`,
 		`  if [ -n "$YQ_FLAVORS" ]; then FLAVORS="$YQ_FLAVORS"; fi`,
 		`fi`,
-		// forgecrate installiert CLAUDE.md, settings.json und Hooks korrekt.
-		// Das Plugin "superpowers" existiert nicht im Marketplace (forgecrate-Bug in base/extensions.yaml)
-		// → Setup schlägt am Ende fehl, alle anderen Artefakte sind aber bereits geschrieben.
-		// || true verhindert dass der Init-Container wegen dieses bekannten Fehlers abbricht.
-		`forgecrate init --profile "$PROFILE" --flavors "$FLAVORS" || true`,
+		// superpowers-Plugin vorab installieren damit forgecrate es vorfindet.
+		// Quelle: obra/superpowers-marketplace (nicht claude-plugins-official).
+		`claude plugin marketplace add obra/superpowers-marketplace 2>/dev/null || true`,
+		`claude plugin install --scope project superpowers@superpowers-marketplace 2>/dev/null || true`,
+		`forgecrate init --profile "$PROFILE" --flavors "$FLAVORS"`,
 		// Titel als Variable setzen, um printf-Format-Injection durch Sonderzeichen (%) zu vermeiden
 		fmt.Sprintf(`ISSUE_TITLE=%q`, p.IssueTitle),
 		fmt.Sprintf(`printf "GitHub Issue #%s: %%s\n\nArbeite dieses Issue vollstaendig ab.\nErstelle Branch agent/issue-%s, implementiere die Loesung und oeffne einen PR.\n" "$ISSUE_TITLE" > /workspace/.agent-prompt`,
