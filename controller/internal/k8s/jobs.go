@@ -175,7 +175,7 @@ func buildSetupScript(p JobParams) string {
 		// Suffix hilft für zukünftige Versionen; || true macht den Fehler nicht-fatal
 		// bis forgecrate den Bug in base/extensions.yaml behebt.
 		// Alles außer dem Plugin (CLAUDE.md, settings.json, Hooks) wird korrekt installiert.
-		`claude plugin install --scope project superpowers@claude-plugins-official 2>/dev/null || true`,
+		`claude plugin install --scope project superpowers@claude-plugins-official >/dev/null 2>&1 || true`,
 		`forgecrate init --profile "$PROFILE" --flavors "$FLAVORS" || true`,
 		// Titel als Variable setzen, um printf-Format-Injection durch Sonderzeichen (%) zu vermeiden
 		fmt.Sprintf(`ISSUE_TITLE=%q`, p.IssueTitle),

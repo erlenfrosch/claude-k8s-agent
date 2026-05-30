@@ -55,7 +55,7 @@ fi
 # --share wird nicht mehr unterstützt; Session-Link entfällt.
 claude \
   --dangerously-skip-permissions \
-  --message "$(cat .agent-prompt)" \
+  --print "$(cat .agent-prompt)" \
   2>&1 | tee "$CLAUDE_LOG" &
 
 CLAUDE_PID=$!
