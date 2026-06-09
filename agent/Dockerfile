@@ -14,7 +14,7 @@ LABEL org.opencontainers.image.description="Autonomer Claude Code Agent fuer Kub
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git curl ca-certificates gnupg jq \
+    git curl ca-certificates gnupg jq openssh-server \
     && rm -rf /var/lib/apt/lists/*
 
 # Node.js 20
@@ -39,7 +39,8 @@ COPY --from=controller-build /issue-controller /usr/local/bin/issue-controller
 
 # entrypoint
 COPY agent/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/issue-controller
+COPY agent/entrypoint-terminal.sh /usr/local/bin/entrypoint-terminal.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/entrypoint-terminal.sh /usr/local/bin/issue-controller
 
 # Ubuntu 24.04 enthält bereits user "ubuntu" (UID 1000).
 # Claude Code blockiert --dangerously-skip-permissions als root → als "ubuntu" ausführen.
