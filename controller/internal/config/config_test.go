@@ -70,7 +70,7 @@ func TestLoad_autorunEnabledDefault(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if cfg.AutorunEnabled != false {
+	if cfg.AutorunEnabled {
 		t.Errorf("expected AutorunEnabled=false by default, got %v", cfg.AutorunEnabled)
 	}
 }
@@ -86,7 +86,7 @@ func TestLoad_autorunEnabledTrue(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if cfg.AutorunEnabled != true {
+	if !cfg.AutorunEnabled {
 		t.Errorf("expected AutorunEnabled=true, got %v", cfg.AutorunEnabled)
 	}
 }
