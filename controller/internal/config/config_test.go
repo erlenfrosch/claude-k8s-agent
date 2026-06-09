@@ -59,3 +59,34 @@ func TestLoad_invalidMaxPods(t *testing.T) {
 		t.Error("expected error for invalid MAX_PODS")
 	}
 }
+
+func TestLoad_autorunEnabledDefault(t *testing.T) {
+	t.Setenv("GOTIFY_URL", "http://gotify.test")
+	t.Setenv("AGENT_IMAGE", "img:latest")
+	t.Setenv("GITHUB_TOKEN", "tok")
+	t.Setenv("TARGET_REPO", "owner/repo")
+
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if cfg.AutorunEnabled != false {
+		t.Errorf("expected AutorunEnabled=false by default, got %v", cfg.AutorunEnabled)
+	}
+}
+
+func TestLoad_autorunEnabledTrue(t *testing.T) {
+	t.Setenv("GOTIFY_URL", "http://gotify.test")
+	t.Setenv("AGENT_IMAGE", "img:latest")
+	t.Setenv("GITHUB_TOKEN", "tok")
+	t.Setenv("TARGET_REPO", "owner/repo")
+	t.Setenv("AUTORUN_ENABLED", "true")
+
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if cfg.AutorunEnabled != true {
+		t.Errorf("expected AutorunEnabled=true, got %v", cfg.AutorunEnabled)
+	}
+}
