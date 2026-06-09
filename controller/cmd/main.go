@@ -72,6 +72,11 @@ func main() {
 		"namespace", cfg.Namespace,
 	)
 
+	if !cfg.AutorunEnabled {
+		slog.Info("Autorun deaktiviert (AUTORUN_ENABLED != true) — kein Reconcile")
+		os.Exit(0)
+	}
+
 	k8sClient, err := k8sclient.NewInClusterClient(cfg.Namespace)
 	if err != nil {
 		slog.Error("K8s-Client fehlgeschlagen", "error", err)
