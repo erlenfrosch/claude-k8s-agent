@@ -18,6 +18,7 @@ type Config struct {
 	TargetRepo     string
 	Namespace      string
 	SecretName     string
+	AutorunEnabled bool
 }
 
 func Load() (*Config, error) {
@@ -37,6 +38,7 @@ func Load() (*Config, error) {
 		TargetRepo:     mustEnv("TARGET_REPO"),
 		Namespace:      env("NAMESPACE", "claude-agent"),
 		SecretName:     env("SECRET_NAME", "claude-agent-secrets"),
+		AutorunEnabled: os.Getenv("AUTORUN_ENABLED") == "true",
 	}, nil
 }
 
