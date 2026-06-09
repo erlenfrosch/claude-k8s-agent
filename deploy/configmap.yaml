@@ -14,3 +14,4 @@ data:
   AGENT_IMAGE: "ghcr.io/erlenfrosch/claude-agent:latest"
   NAMESPACE: "claude-agent"
   SECRET_NAME: "claude-agent-secrets"
+  AUTORUN_ENABLED: "false"
